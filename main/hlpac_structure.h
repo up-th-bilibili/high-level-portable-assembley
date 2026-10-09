@@ -19,10 +19,12 @@ typedef enum:uint16_t{
     JMP_WHEN,
     JMP_FLAGWITH,
     MOV_WHEN,
+    MOV_FLAGWITH,
     REG_DECL,
     RET,
     LITERAL,
-    REG_LABEL
+    REG_LABEL,
+    RAW_AT_MACHINE
 }HLPAASTTypes;
 typedef enum:uint16_t{
     UNSETTING,
@@ -113,7 +115,7 @@ typedef struct{
 typedef struct{
     uint32_t name_index;
     uint16_t name_size;
-    uint16_t bool_field; // LE in file unuse
+    uint16_t array_size; // array_size?is_array:is_not_array
 }VariableNode;
 typedef struct{
     HLPAASTTypes ast_type;
@@ -121,5 +123,26 @@ typedef struct{
     uint32_t variables_index;
     uint16_t variables_count;
     uint16_t decl_type_bitmap; // LE store uuuuuuuuuuuuuuuv v:volatile
-}VariableDecl;
+}VariableDeclNode;
+typedef enum:uint16_t{
+    EQUAL,
+    NOT_EQUAL,
+    LESS_THAN,
+    GREAT_EQUAL,
+    LESS_EQUAL,
+    GREAT_THAN,
+}CompareType;
+typedef struct{
+    HLPAASTTypes ast_type;
+    OperationType opt_type;
+    HLPAElemTypes src_type;
+    HLPAElemTypes dst_type;
+    uint32_t src_index;
+    uint32_t dst_index;
+    HLPAElemTypes cmp_left_type;
+    HLPAElemTypes cmp_right_type;
+    uint32_t cmp_left_index;
+    uint32_t cmp_right_index;
+    CompareType compare;
+}MoveWhenNode;
 #endif
