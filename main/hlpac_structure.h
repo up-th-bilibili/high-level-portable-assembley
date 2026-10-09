@@ -113,6 +113,13 @@ typedef struct{
 typedef struct{
     uint32_t name_index;
     uint16_t name_size;
-    uint16_t bool_field; // LE in file
+    uint16_t bool_field; // LE in file unuse
 }VariableNode;
+typedef struct{
+    HLPAASTTypes ast_type;
+    HLPAElemTypes decl_type;
+    uint32_t variables_index;
+    uint16_t variables_count;
+    uint16_t decl_type_bitmap; // LE store uuuuuuuuuuuuuuuv v:volatile
+}VariableDecl;
 #endif
