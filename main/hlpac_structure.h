@@ -123,6 +123,7 @@ typedef struct{
     uint32_t variables_index;
     uint16_t variables_count;
     uint16_t decl_type_bitmap; // LE store uuuuuuuuuuuuuuuv v:volatile
+    uint32_t decl_type_extra;
 }VariableDeclNode;
 typedef enum:uint16_t{
     EQUAL,
@@ -145,4 +146,10 @@ typedef struct{
     uint32_t cmp_right_index;
     CompareType compare;
 }MoveWhenNode;
+typedef struct{
+    HLPAASTTypes ast_type;
+    uint16_t count_of_args;
+    uint32_t pointer_to_arguments;
+    uint32_t pointer_to_typings;
+}FunctionNode;
 #endif
