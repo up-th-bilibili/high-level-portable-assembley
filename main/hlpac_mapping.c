@@ -67,13 +67,13 @@ uint64_t hlpac_mapping_string_hash(const char* string,size_t size){
 }
 void hlpac_mapping_set(HLPAMapping* self,uint64_t hash,void* value){
     // TODO:扩容逻辑
-    auto i=hash&(self->max_count-1);
+    auto i=hash;
     auto curr=hash;
-    while(((self->flags[i>>2])>>(i&3))&1){
+    for(;i&=(self->max_count-1),((self->flags[i>>2])>>((i&3)<<1))&1;){
         i*=5;
         i+=(curr>>=5,curr)+1;
-        i&=(self->max_count-1);
     }
     self->datas[i].key=hash;
     self->datas[i].datas=value;
+    self->flags[i>>2]&=~(3<<((i&3)<<1));
 }
