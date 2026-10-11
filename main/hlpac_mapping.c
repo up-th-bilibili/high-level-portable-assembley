@@ -69,11 +69,11 @@ void hlpac_mapping_set(HLPAMapping* self,uint64_t hash,void* value){
     // TODO:扩容逻辑
     auto i=hash;
     auto curr=hash;
-    for(;i&=(self->max_count-1),((self->flags[i>>2])>>((i&3)<<1))&1;){
+    for(;i&=(self->max_count-1),self->datas[i].key==hash||((self->flags[i>>2])>>((i&3)<<1))&1;){
         i*=5;
         i+=(curr>>=5,curr)+1;
     }
-    self->datas[i].key=hash;
+    if(self->datas[i].key!=hash)self->datas[i].key=hash;
     self->datas[i].datas=value;
     self->flags[i>>2]&=~(3<<((i&3)<<1));
 }
