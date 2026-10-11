@@ -12,7 +12,7 @@ void hlpac_mapping_init(HLPAMapping* self){
 }
 HLPAMapping* hlpac_mapping_create(){
     HLPAMapping* self = hlpac_mapping_new();
-    hlpac_mapping_init(self);
+    if(self)hlpac_mapping_init(self);
     return self;
 }
 uint32_t hlpac_mapping_string_hash_get_char_utf8(const char* string,uint8_t* char_size){
@@ -63,5 +63,17 @@ uint64_t hlpac_mapping_string_hash(const char* string,size_t size){
             res*=1099511628211ull;
         }
     }
-    return res;
+    return hash_finalize(res);
+}
+void hlpac_mapping_set(HLPAMapping* self,uint64_t hash,void* value){
+    // TODO:扩容逻辑
+    auto i=hash&(self->max_count-1);
+    auto curr=hash;
+    while(((self->flags[i>>2])>>(i&3))&1){
+        i*=5;
+        i+=(curr>>=5,curr)+1;
+        i&=(self->max_count-1);
+    }
+    self->datas[i].key=hash;
+    self->datas[i].datas=value;
 }
