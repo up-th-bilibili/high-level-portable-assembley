@@ -5,15 +5,17 @@
 #include<stdint.h>
 #include"hlpac_structure.h"
 typedef struct{
+    uint64_t key;
+    void* datas;
+}HLPAMappingElement;
+typedef struct{
     size_t max_count;
     size_t curr_count;
     uint8_t* flags;
-    struct element{
-        uint64_t key;
-        uint8_t datas[];
-    }*datas;
+    HLPAMappingElement* datas;
 }HLPAMapping;
 HLPAMapping* hlpac_mapping_create();
 HLPAMapping* hlpac_mapping_new();
 void hlpac_mapping_init(HLPAMapping* self);
+void hlpac_mapping_set(HLPAMapping* self,uint64_t hash,void* value);
 #endif
