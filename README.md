@@ -6,6 +6,6 @@ HLPA 是一个让你能将 LLVM 从你的项目中~~踢出~~移除并换用更�
 
 ---
 
-**High-Level Portable Assembly(HLPA)** is an IR. Its grammar is simple than LLVM. Because its grammar is refers to assembly and merge the unique design idea.
+**High-Level Portable Assembly(HLPA)** is an IR. Its grammar is simple than LLVM's because it takes ideas from assembly and blends them with a unique design approach.
 
 **高层级可移植汇编（HLPA）**是一个中间表示，但其语法相较于 LLVM 会更为简单，因为其语法参考了汇编并融入了独特的设计思路。
