@@ -66,14 +66,57 @@ uint64_t hlpac_mapping_string_hash(const char* string,size_t size){
     return hash_finalize(res);
 }
 void hlpac_mapping_set(HLPAMapping* self,uint64_t hash,void* value){
-    // TODO:扩容逻辑
+    if(!self)return;
+    if(!self->datas){
+        self->datas = malloc(32*sizeof(HLPAMappingElement));
+        if(!self->datas)return;
+        self->flags = calloc(8,1);
+        if(!self->flags){
+            free(self->datas);
+            return;
+        }
+        self->max_count=32;
+    }
+    if(self->curr_count==self->max_count){
+        void* temp = realloc(self->datas,self->max_count*sizeof(HLPAMappingElement)*2);
+        if(!temp){
+            free(self->datas);
+            free(self->flags);
+            self->max_count=self->curr_count=0;
+            self->flags=self->datas=nullptr;
+            return;
+        }
+        self->datas = temp;
+        temp = realloc(self->flags,self->max_count>>1);
+        if(!temp){
+            free(self->datas);
+            free(self->flags);
+            self->max_count=self->curr_count=0;
+            self->flags=self->datas=nullptr;
+            return;
+        }
+        self->flags=temp;
+        self->max_count<<=1;
+    }
     auto i=hash;
     auto curr=hash;
-    for(;i&=(self->max_count-1),self->datas[i].key==hash||((self->flags[i>>2])>>((i&3)<<1))&1;){
+    for(;i&=(self->max_count-1),(self->datas[i].key==hash)||!(((self->flags[i>>2])>>((i&3)<<1))&1);){
         i*=5;
         i+=(curr>>=5,curr)+1;
     }
     if(self->datas[i].key!=hash)self->datas[i].key=hash;
     self->datas[i].datas=value;
     self->flags[i>>2]&=~(3<<((i&3)<<1));
+    self->curr_count+=1;
+}
+void* hlpac_mapping_get(HLPAMapping* self,uint64_t hash){
+    if(!self->max_count)return nullptr;
+    auto i=hash;
+    auto curr=hash;
+    for(;i&=(self->max_count-1),self->datas[i].key==hash||((self->flags[i>>2])>>((i&3)<<1))&3;){
+        i*=5;
+        i+=(curr>>=5,curr)+1;
+    }
+    if(self->datas[i].key!=hash)return nullptr;
+    return self->datas[i].datas;
 }
