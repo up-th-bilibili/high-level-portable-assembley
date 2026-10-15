@@ -90,17 +90,23 @@ typedef struct{
     HLPAElemTypes src1_type;
     HLPAElemTypes src2_type;
     HLPAElemTypes dst_type;
+    HLPAElemTypes explit_type;
     uint32_t src1_index;
     uint32_t src2_index;
     uint32_t dst_index;
+    uint32_t explit_type_extra;
+    uint16_t prefix; // uuuuuuuuuuuuuufl f:flag l:lock
 }TripleOptNumNode;
 typedef struct{
     HLPAASTTypes typing;
     OperationType opt_type;
+    HLPAElemTypes explit_type;
+    uint16_t prefix; // uuuuuuuuuuuuuufl f:flag l:lock
     HLPAElemTypes src_type;
     HLPAElemTypes dst_type;
     uint32_t src_index;
     uint32_t dst_index;
+    uint32_t explit_type_extra;
 }DoubleOptNumNode;
 typedef struct{
     uint32_t disp;
@@ -152,4 +158,10 @@ typedef struct{
     uint32_t pointer_to_arguments;
     uint32_t pointer_to_typings;
 }FunctionNode;
+typedef struct{
+    void* bin;
+    HLPAMapping relocate_table_all_section;
+    HLPAMapping symbol_table_all_section;
+    HLPAMapping symbol_table_disp;
+}HLPABuildTable;
 #endif
