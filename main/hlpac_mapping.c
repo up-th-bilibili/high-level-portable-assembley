@@ -68,55 +68,77 @@ uint64_t hlpac_mapping_string_hash(const char* string,size_t size){
 void hlpac_mapping_set(HLPAMapping* self,uint64_t hash,void* value){
     if(!self)return;
     if(!self->datas){
-        self->datas = malloc(32*sizeof(HLPAMappingElement));
+        self->datas = calloc(32,sizeof(HLPAMappingElement));
         if(!self->datas)return;
         self->flags = calloc(8,1);
         if(!self->flags){
             free(self->datas);
+            self->datas=nullptr;
             return;
         }
         self->max_count=32;
     }
     if(self->curr_count==self->max_count){
-        void* temp = realloc(self->datas,self->max_count*sizeof(HLPAMappingElement)*2);
-        if(!temp){
+        HLPAMappingElement* new_datas = calloc(self->max_count*2,sizeof(HLPAMappingElement));
+        if(!new_datas){
             free(self->datas);
             free(self->flags);
             self->max_count=self->curr_count=0;
             self->flags=self->datas=nullptr;
             return;
         }
-        self->datas = temp;
-        temp = realloc(self->flags,self->max_count>>1);
-        if(!temp){
+        uint8_t* new_flags = calloc(self->max_count>>1,1);
+        if(!new_flags){
+            free(new_datas);
             free(self->datas);
             free(self->flags);
             self->max_count=self->curr_count=0;
             self->flags=self->datas=nullptr;
             return;
         }
-        self->flags=temp;
-        self->max_count<<=1;
+        HLPAMappingElement* old_datas=self->datas;
+        uint8_t* old_flags=self->flags;
+        size_t old_max_count=self->max_count;
+        self->datas=new_datas;
+        self->flags=new_flags;
+        self->max_count=old_max_count<<1;
+        self->curr_count=0;
+        for(size_t j=0;j<old_max_count;j++){
+            if(((old_flags[j>>2])>>((j&3)<<1))&1){
+                hlpac_mapping_set(self,old_datas[j].key,old_datas[j].datas);
+            }
+        }
+        free(old_datas);
+        free(old_flags);
     }
     auto i=hash;
     auto curr=hash;
-    for(;i&=(self->max_count-1),(self->datas[i].key==hash)||!(((self->flags[i>>2])>>((i&3)<<1))&1);){
+    for(;i&=(self->max_count-1),self->datas[i].key!=hash&&(((self->flags[i>>2])>>((i&3)<<1))&1);){
         i*=5;
         i+=(curr>>=5,curr)+1;
     }
-    if(self->datas[i].key!=hash)self->datas[i].key=hash;
+    if(self->datas[i].key!=hash){
+        self->datas[i].key=hash;
+        self->curr_count+=1;
+    }
     self->datas[i].datas=value;
-    self->flags[i>>2]&=~(3<<((i&3)<<1));
-    self->curr_count+=1;
+    self->flags[i>>2]=(self->flags[i>>2]&~(3<<((i&3)<<1)))|(1<<((i&3)<<1));
 }
 void* hlpac_mapping_get(HLPAMapping* self,uint64_t hash){
-    if(!self->max_count)return nullptr;
+    if(!self->max_count){
+        errno = ENOENT;
+        return nullptr;
+    }
     auto i=hash;
     auto curr=hash;
-    for(;i&=(self->max_count-1),self->datas[i].key==hash||((self->flags[i>>2])>>((i&3)<<1))&3;){
+    for(;i&=(self->max_count-1),self->datas[i].key!=hash&&(((self->flags[i>>2])>>((i&3)<<1))&3);){
         i*=5;
         i+=(curr>>=5,curr)+1;
     }
-    if(self->datas[i].key!=hash)return nullptr;
+    if(self->datas[i].key!=hash){
+        errno = ENOENT;
+        return nullptr;
+    }
+    errno = 0;
     return self->datas[i].datas;
 }
